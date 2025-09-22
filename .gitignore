@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Alembic
+migrations/__pycache__/
+migrations/*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python cache
+*.pyo
+*.pyd
+
+# SQLite (если когда-то будешь использовать для тестов)
+*.sqlite3
+
+# Environment variables
+.env
