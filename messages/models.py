@@ -1,17 +1,22 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Column, String, ForeignKey, DateTime, func, Boolean
+from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from database import Base
 
 
 class Messages(Base):
-    __tablename__ = 'messages'
+    __tablename__ = "messages"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    chat_id = Column(UUID(as_uuid=True), ForeignKey("chats.id", ondelete="Cascade"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="Cascade"), nullable=False)
+    chat_id = Column(ForeignKey("chats.id", ondelete="CASCADE"))
+    sender_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
     text = Column(String, nullable=False)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    timestamp = Column(DateTime, default=datetime.utcnow)
     is_read = Column(Boolean, default=False)
+
+    chat = relationship("Chat", back_populates="messages")
+    sender = relationship("User", back_populates="messages")

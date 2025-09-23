@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from database import Base
 
@@ -13,3 +14,6 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
+
+    chats = relationship("ChatParticipant", back_populates="user")
+    messages = relationship("Message", back_populates="sender")
