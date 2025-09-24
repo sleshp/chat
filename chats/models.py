@@ -17,11 +17,11 @@ class Chat(Base):
     __tablename__ = 'chats'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    title = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=True)
     type = Column(Enum(ChatType), nullable=False)
 
     participants = relationship("ChatParticipant", back_populates="chat", cascade="all, delete-orphan")
-    messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
+    messages = relationship("Messages", back_populates="chat", cascade="all, delete-orphan")
 
 
 class ChatParticipant(Base):

@@ -16,4 +16,4 @@ class User(Base):
     password = Column(String(255), nullable=False)
 
     chats = relationship("ChatParticipant", back_populates="user")
-    messages = relationship("Message", back_populates="sender")
+    messages = relationship("Messages", back_populates="sender")

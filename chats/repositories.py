@@ -24,3 +24,9 @@ class ChatRepository:
         await session.commit()
         await session.refresh(chat)
         return chat
+
+    @staticmethod
+    async def add_participants(session: AsyncSession, participants: list[ChatParticipant]):
+        session.add_all(participants)
+        await session.commit()
+
