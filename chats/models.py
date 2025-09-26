@@ -30,7 +30,7 @@ class ChatParticipant(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     chat_id = Column(ForeignKey("chats.id", ondelete="CASCADE"))
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
-    role = Column(String(50), nullable=True)  # member/admin
+    role = Column(String(50), nullable=True)
 
     chat = relationship("Chat", back_populates="participants")
     user = relationship("User", back_populates="chats")

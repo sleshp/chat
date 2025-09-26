@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import get_current_user, get_session
-from messages.schemas import MessageReadSchema, MessageCreateSchema
+from messages.schemas import MessageReadSchema, MessageCreateSchema, MarkReadSchema
 from messages.services import MessageService
 from users.models import User
 
@@ -22,6 +22,6 @@ async def get_chat_history(chat_id: uuid.UUID, session: AsyncSession = Depends(g
 
 
 @messages_router.patch('/{message_id}/read')
-async def mark_as_read(message_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
-    await MessageService.mark_as_read(message_id=message_id, session=session)
-    return {"status": "ok"}
+async def mark_as_read(data: MarkReadSchema, session: AsyncSession = Depends(get_session)):
+    messages = await MessageService.mark_as_read(message_ids=data.message_ids, session=session)
+    return {"updated": [str(m.id) for m in messages]}

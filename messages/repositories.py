@@ -24,10 +24,19 @@ class MessageRepository:
         return result.scalars().all()
 
     @staticmethod
-    async def mark_as_read(session: AsyncSession, message_id: uuid.UUID) -> None:
-        message = await session.get(Messages, message_id)
-        if message:
-            message.is_read = True
-            await session.commit()
-        else:
-            raise HTTPException(status_code=404, detail="Message not found")
+    async def get_by_client_id(session: AsyncSession, client_msg_id: uuid.UUID) -> Messages:
+        result = await session.execute(
+            select(Messages).where(Messages.client_msg_id == client_msg_id)
+        )
+        return result.scalars().first()
+
+    @staticmethod
+    async def mark_as_read(session: AsyncSession, message_ids: list[uuid.UUID]) -> list[Messages]:
+        result = []
+        for mid in message_ids:
+            message = await session.get(Messages, mid)
+            if message:
+                message.is_read = True
+                result.append(message)
+        await session.commit()
+        return result

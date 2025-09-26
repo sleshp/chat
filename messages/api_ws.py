@@ -15,7 +15,6 @@ ws_router = APIRouter(tags=['websockets'])
 manager = ConnectionManager()
 
 
-
 @ws_router.websocket('/ws')
 async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depends(get_session)):
     await websocket.accept()
@@ -49,10 +48,20 @@ async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depend
             elif action == "send_message":
                 chat_id = uuid.UUID(data.get("chat_id"))
                 text = data.get("text")
-                message_create = MessageCreateSchema(chat_id=chat_id, text=text)
+                client_msg_id = uuid.UUID(data.get("client_msg_id"))
+
+                message_create = MessageCreateSchema(chat_id=chat_id, text=text, client_msg_id=client_msg_id)
                 message = await MessageService.create_message(session, message_create, user_id)
 
-                await manager.broadcast(chat_id, MessageReadSchema.model_validate(message).model_dump())
+                await manager.broadcast(chat_id, MessageReadSchema.model_validate(message).model_dump(mode="json"))
+            elif action == "read_messages":
+                message_ids = [uuid.UUID(mid) for mid in data.get("message_ids", [])]
+                messages = await MessageService.mark_as_read(session, message_ids)
+                for msg in messages:
+                    await manager.broadcast(
+                        msg.chat_id,
+                        MessageReadSchema.model_validate(msg).model_dump(mode="json")
+                    )
 
     except WebSocketDisconnect:
         manager.disconnect(user_id)

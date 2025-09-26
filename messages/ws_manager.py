@@ -9,7 +9,6 @@ class ConnectionManager:
         self.active_users: Dict[uuid.UUID, Dict] = {}
 
     async def connect(self, user_id: uuid.UUID, websocket: WebSocket):
-        await websocket.accept()
         self.active_users[user_id] = {
             "socket": websocket,
             "subscriptions": set()
