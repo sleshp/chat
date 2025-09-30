@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=SECRET_KEY
+      - ALGORITHM=HS256
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/chatdb
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./alembic.ini:/app/alembic.ini
+      - ./migrations:/app/migrations
+    command: >
+      sh -c "echo 'Waiting for database...' &&
+             sleep 10 &&
+             alembic upgrade head &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=chatdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d chatdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
