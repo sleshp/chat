@@ -53,7 +53,9 @@ class UserService:
         data = user.model_dump()
         data["password"] = UserService.hash_password(data["password"])
         new_user = User(**data)
-        return await UserRepository.create(session, new_user)
+        created_user = await UserRepository.create(session, new_user)
+        await session.commit()
+        return created_user
 
     @staticmethod
     async def list_users(session: AsyncSession):

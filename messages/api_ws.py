@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from chats.services import ChatService
 from config import get_auth_data
 from dependencies import get_session
 from messages.schemas import MessageCreateSchema, MessageReadSchema
@@ -39,14 +40,17 @@ async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depend
             action = data.get("action")
             if action == "subscribe":
                 chat_id = uuid.UUID(data.get("chat_id"))
+                await ChatService.ensure_member(session, chat_id, user_id)
                 manager.subscribe(user_id, chat_id)
 
             elif action == "unsubscribe":
                 chat_id = uuid.UUID(data.get("chat_id"))
+                await ChatService.ensure_member(session, chat_id, user_id)
                 manager.unsubscribe(user_id, chat_id)
 
             elif action == "send_message":
                 chat_id = uuid.UUID(data.get("chat_id"))
+                await ChatService.ensure_member(session, chat_id, user_id)
                 text = data.get("text")
                 client_msg_id = uuid.UUID(data.get("client_msg_id"))
 
@@ -56,8 +60,9 @@ async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depend
                 await manager.broadcast(chat_id, MessageReadSchema.model_validate(message).model_dump(mode="json"))
             elif action == "read_messages":
                 message_ids = [uuid.UUID(mid) for mid in data.get("message_ids", [])]
-                messages = await MessageService.mark_as_read(session, message_ids)
+                messages = await MessageService.mark_as_read(session, message_ids, user_id)
                 for msg in messages:
+                    await ChatService.ensure_member(session, msg.chat_id, user_id)
                     await manager.broadcast(
                         msg.chat_id,
                         MessageReadSchema.model_validate(msg).model_dump(mode="json")

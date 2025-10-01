@@ -21,12 +21,16 @@ class ChatRepository:
     @staticmethod
     async def create(session: AsyncSession, chat: Chat):
         session.add(chat)
-        await session.commit()
+        await session.flush()
         await session.refresh(chat)
         return chat
 
     @staticmethod
     async def add_participants(session: AsyncSession, participants: list[ChatParticipant]):
         session.add_all(participants)
-        await session.commit()
+        await session.flush()
 
+    @staticmethod
+    async def is_participant(session: AsyncSession, chat_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        result = await session.execute(select(ChatParticipant).where(ChatParticipant.user_id == user_id, ChatParticipant.chat_id == chat_id))
+        return result.scalars().first() is not None

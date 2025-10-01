@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -15,7 +15,7 @@ class Messages(Base):
     chat_id = Column(ForeignKey("chats.id", ondelete="CASCADE"))
     sender_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
     text = Column(String, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     is_read = Column(Boolean, default=False)
 
     client_msg_id = Column(UUID(as_uuid=True), nullable=False, unique=True)

@@ -20,8 +20,4 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
-    print("DEBUG >>> get_current_user called")
-    print("DEBUG >>> token:", token)
-    print("DEBUG >>> session type:", type(session))
-    print("DEBUG >>> func signature:", inspect.signature(get_current_user))
     return await UserService.get_current_user_by_token(session, token)

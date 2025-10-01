@@ -20,6 +20,7 @@ class ChatService:
             participants.append(ChatParticipant(chat_id=chat.id, user_id=uid))
 
         await ChatRepository.add_participants(session, participants)
+        await session.commit()
         return chat
 
     @staticmethod
@@ -32,3 +33,8 @@ class ChatService:
     @staticmethod
     async def get_user_chats(session: AsyncSession, user_id: uuid.UUID) -> list[Chat]:
         return await ChatRepository.get_user_chats(session, user_id)
+
+    @staticmethod
+    async def ensure_member(session: AsyncSession, chat_id: uuid.UUID, user_id: uuid.UUID):
+        if not await ChatRepository.is_participant(session, chat_id, user_id):
+            raise HTTPException(status_code=403, detail="User not in chat")

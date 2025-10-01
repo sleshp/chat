@@ -19,11 +19,15 @@ async def create_chat(data: ChatCreateSchema, current_user: User = Depends(get_c
 
 @chat_router.get("/my", response_model=list[ChatReadSchema])
 async def get_my_chat(current_user: User = Depends(get_current_user), session: AsyncSession=Depends(get_session)):
-    print("DEBUG >>> current_user:", current_user)
-    print("DEBUG >>> session:", session)
+
     return await ChatService.get_user_chats(session, current_user.id)
 
 
 @chat_router.get("/{chat_id}", response_model=ChatReadSchema)
-async def get_chat(chat_id: uuid.UUID, session: AsyncSession=Depends(get_session)):
+async def get_chat(
+        chat_id: uuid.UUID,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession=Depends(get_session)
+):
+    await ChatService.ensure_member(session, chat_id, current_user.id)
     return await ChatService.get_chat(session, chat_id)
