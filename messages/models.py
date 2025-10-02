@@ -18,7 +18,7 @@ class Messages(Base):
     timestamp = timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     is_read = Column(Boolean, default=False)
 
-    client_msg_id = Column(UUID(as_uuid=True), nullable=False, unique=True)
+    client_msg_id = Column(UUID(as_uuid=True), nullable=False, unique=True, default=uuid.uuid4)
 
     chat = relationship("Chat", back_populates="messages")
     sender = relationship("User", back_populates="messages")
