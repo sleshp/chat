@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from chats.models import Chat
-from chats.schemas import ChatReadSchema, ChatCreateSchema
+from chats.schemas import ChatReadSchema, ChatCreateSchema, ChatParticipantReadSchema, DetailResponseSchema, ChatParticipantListSchema
 from chats.services import ChatService
 from dependencies import get_current_user, get_session
 from users.models import User
@@ -31,3 +31,44 @@ async def get_chat(
 ):
     await ChatService.ensure_member(session, chat_id, current_user.id)
     return await ChatService.get_chat(session, chat_id)
+
+
+@chat_router.post("/{chat_id}/add_member", response_model=ChatParticipantReadSchema)
+async def add_member(
+        chat_id: uuid.UUID,
+        user_id: uuid.UUID,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(get_session),
+):
+    return await ChatService.add_member(session, chat_id, user_id, current_user.id)
+
+
+@chat_router.delete("/{chat_id}/remove_member", response_model=DetailResponseSchema)
+async def remove_member(
+        chat_id: uuid.UUID,
+        user_id: uuid.UUID,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(get_session),
+):
+    await ChatService.remove_member(session, chat_id, user_id, current_user.id)
+    return {"detail": "User was removed"}
+
+
+@chat_router.delete("/{chat_id}/leave_chat", response_model=DetailResponseSchema)
+async def leave_chat(
+        chat_id: uuid.UUID,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(get_session),
+):
+    await ChatService.leave_chat(session, chat_id, current_user.id)
+    return {"detail": "You left the chat"}
+
+
+@chat_router.get("/{chat_id}/participants", response_model=ChatParticipantListSchema)
+async def get_participants(
+    chat_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    await ChatService.ensure_member(session, chat_id, current_user.id)
+    return await ChatService.get_participants(session, chat_id)

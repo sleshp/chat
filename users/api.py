@@ -12,7 +12,6 @@ from users.services import UserService
 user_router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-
 @user_router.get("/", response_model=list[UserReadSchema])
 async def get_users(session: AsyncSession = Depends(get_session)):
     return await UserService.list_users(session)
