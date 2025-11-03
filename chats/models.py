@@ -25,7 +25,7 @@ class Chat(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=True)
-    type = Column(Enum(ChatType), nullable=False)
+    type = Column(Enum(ChatType, name="chattype", native_enum=True, create_type=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     participants = relationship("ChatParticipant", back_populates="chat", cascade="all, delete-orphan")
@@ -38,7 +38,7 @@ class ChatParticipant(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     chat_id = Column(ForeignKey("chats.id", ondelete="CASCADE"))
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
-    role = Column(Enum(ParticipantRole), nullable=False, default=ParticipantRole.member)
+    role = Column(Enum(ParticipantRole, name="participantrole", native_enum=True, create_type=True), nullable=False, default=ParticipantRole.member)
 
     chat = relationship("Chat", back_populates="participants")
     user = relationship("User", back_populates="chats")
