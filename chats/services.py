@@ -76,6 +76,12 @@ class ChatService:
         return await ChatRepository.get_user_chats(session, user_id)
 
     @staticmethod
+    async def list_user_chat_ids(
+        session: AsyncSession, user_id: uuid.UUID
+    ) -> list[uuid.UUID]:
+        return await ChatRepository.list_user_chat_ids(session, user_id)
+
+    @staticmethod
     async def ensure_member(
         session: AsyncSession, chat_id: uuid.UUID, user_id: uuid.UUID
     ):

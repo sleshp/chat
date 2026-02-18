@@ -13,7 +13,16 @@ class ChatRepository:
         result = await session.execute(
             select(Chat).join(ChatParticipant).where(ChatParticipant.user_id == user_id)
         )
-        return result.scalars().all()
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def list_user_chat_ids(
+        session: AsyncSession, user_id: uuid.UUID
+    ) -> list[uuid.UUID]:
+        result = await session.execute(
+            select(ChatParticipant.chat_id).where(ChatParticipant.user_id == user_id)
+        )
+        return list(result.scalars().all())
 
     @staticmethod
     async def get_by_id(session: AsyncSession, chat_id: uuid.UUID) -> Chat | None:
