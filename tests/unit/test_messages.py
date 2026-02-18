@@ -1,6 +1,7 @@
-import pytest
 import uuid
 from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from messages.services import MessageService
 
@@ -13,7 +14,9 @@ async def test_create_message_calls_repo_and_commits(monkeypatch):
     async def fake_create_message(session, message):
         return fake_msg
 
-    monkeypatch.setattr("messages.services.MessageRepository.create_message", fake_create_message)
+    monkeypatch.setattr(
+        "messages.services.MessageRepository.create_message", fake_create_message
+    )
 
     data = Mock(chat_id=uuid.uuid4(), text="Hello!", client_msg_id=uuid.uuid4())
     sender_id = uuid.uuid4()
@@ -32,7 +35,9 @@ async def test_get_chat_history_delegates(monkeypatch):
     async def fake_get_by_chat(session, chat_id, limit, offset):
         return fake_messages
 
-    monkeypatch.setattr("messages.services.MessageRepository.get_by_chat", fake_get_by_chat)
+    monkeypatch.setattr(
+        "messages.services.MessageRepository.get_by_chat", fake_get_by_chat
+    )
 
     result = await MessageService.get_chat_history(fake_session, uuid.uuid4(), 10, 0)
 
@@ -47,7 +52,9 @@ async def test_mark_as_read_commits(monkeypatch):
     async def fake_mark_as_read(session, ids, user_id):
         return fake_messages
 
-    monkeypatch.setattr("messages.services.MessageRepository.mark_as_read", fake_mark_as_read)
+    monkeypatch.setattr(
+        "messages.services.MessageRepository.mark_as_read", fake_mark_as_read
+    )
 
     message_ids = [uuid.uuid4()]
     user_id = uuid.uuid4()

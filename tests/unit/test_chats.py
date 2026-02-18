@@ -1,6 +1,8 @@
-import pytest
 import uuid
+
+import pytest
 from fastapi import HTTPException
+
 from chats.services import ChatService
 
 

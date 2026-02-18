@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+
 from users.services import UserService
 
 
@@ -22,7 +23,9 @@ def test_create_access_token_returns_jwt():
 @pytest.mark.asyncio
 async def test_register_user_calls_repo(monkeypatch):
     fake_user = Mock(email="alice@example.com")
-    async def fake_create(session, user): return fake_user
+
+    async def fake_create(session, user):
+        return fake_user
 
     monkeypatch.setattr("users.services.UserRepository.create", fake_create)
 

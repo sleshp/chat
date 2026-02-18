@@ -3,11 +3,10 @@ import asyncio
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from database import Base, DATABASE_URL
-import users.models
 import chats.models
 import messages.models
-
+import users.models
+from database import DATABASE_URL, Base
 
 target_metadata = Base.metadata
 

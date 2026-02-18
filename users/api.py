@@ -5,8 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import get_current_user, get_session
-from users.schemas import UserReadSchema, UserCreateSchema, TokenSchema
-
+from users.schemas import TokenSchema, UserCreateSchema, UserReadSchema
 from users.services import UserService
 
 user_router = APIRouter(prefix="/api/users", tags=["users"])
@@ -18,12 +17,18 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 
 
 @user_router.post("/register", response_model=UserReadSchema)
-async def register_user(user: UserCreateSchema, session: AsyncSession = Depends(get_session)):
+async def register_user(
+    user: UserCreateSchema, session: AsyncSession = Depends(get_session)
+):
     return await UserService.register_user(session, user)
 
 
 @user_router.post("/login", response_model=TokenSchema)
-async def login_user(response: Response, creds: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(get_session)):
+async def login_user(
+    response: Response,
+    creds: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_session),
+):
     user = await UserService.get_user_by_email(session, creds.username)
     if user and UserService.verify_password(creds.password, user.password):
         access_token = UserService.create_access_token(data={"sub": str(user.id)})

@@ -1,10 +1,11 @@
 import uvicorn
 from fastapi import FastAPI
 
-from users.api import user_router
 from chats.api import chat_router
 from messages.api import messages_router
 from messages.api_ws import ws_router
+from users.api import user_router
+
 app = FastAPI()
 
 app.include_router(user_router)

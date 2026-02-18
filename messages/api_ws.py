@@ -1,7 +1,7 @@
 import uuid
 
-import jwt
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query
+from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
@@ -12,12 +12,14 @@ from messages.schemas import MessageCreateSchema, MessageReadSchema
 from messages.services import MessageService
 from messages.ws_manager import ConnectionManager
 
-ws_router = APIRouter(tags=['websockets'])
+ws_router = APIRouter(tags=["websockets"])
 manager = ConnectionManager()
 
 
-@ws_router.websocket('/ws')
-async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depends(get_session)):
+@ws_router.websocket("/ws")
+async def websocket_endpoint(
+    websocket: WebSocket, session: AsyncSession = Depends(get_session)
+):
     await websocket.accept()
     try:
         auth_data = await websocket.receive_json()
@@ -25,9 +27,14 @@ async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depend
             await websocket.close(code=1008)
             return
         token = auth_data.get("token")
+        if not token:
+            await websocket.close(code=1008)
+            return
         token_data = get_auth_data()
-        payload = jwt.decode(token, token_data['secret_key'], algorithms=[token_data['algorithm']])
-        user_id = uuid.UUID(payload.get('sub'))
+        payload = jwt.decode(
+            token, token_data["secret_key"], algorithms=[token_data["algorithm"]]
+        )
+        user_id = uuid.UUID(payload.get("sub"))
     except Exception:
         await websocket.close(code=1008)
         return
@@ -54,18 +61,26 @@ async def websocket_endpoint(websocket:WebSocket, session: AsyncSession = Depend
                 text = data.get("text")
                 client_msg_id = uuid.UUID(data.get("client_msg_id"))
 
-                message_create = MessageCreateSchema(chat_id=chat_id, text=text, client_msg_id=client_msg_id)
-                message = await MessageService.create_message(session, message_create, user_id)
+                message_create = MessageCreateSchema(
+                    chat_id=chat_id, text=text, client_msg_id=client_msg_id
+                )
+                message = await MessageService.create_message(
+                    session, message_create, user_id
+                )
 
-                await manager.broadcast(chat_id, MessageReadSchema.model_validate(message).model_dump(mode="json"))
+                await manager.broadcast(
+                    chat_id,
+                    MessageReadSchema.model_validate(message).model_dump(mode="json"),
+                )
             elif action == "read_messages":
                 message_ids = [uuid.UUID(mid) for mid in data.get("message_ids", [])]
-                messages = await MessageService.mark_as_read(session, message_ids, user_id)
+                messages = await MessageService.mark_as_read(
+                    session, message_ids, user_id
+                )
                 for msg in messages:
-                    await ChatService.ensure_member(session, msg.chat_id, user_id)
                     await manager.broadcast(
                         msg.chat_id,
-                        MessageReadSchema.model_validate(msg).model_dump(mode="json")
+                        MessageReadSchema.model_validate(msg).model_dump(mode="json"),
                     )
 
     except WebSocketDisconnect:

@@ -9,10 +9,14 @@ class ConnectionManager:
         self.active_users: Dict[uuid.UUID, Dict] = {}
 
     async def connect(self, user_id: uuid.UUID, websocket: WebSocket):
-        self.active_users[user_id] = {
-            "socket": websocket,
-            "subscriptions": set()
-        }
+        old = self.active_users.get(user_id)
+        if old:
+            try:
+                await old["socket"].close(code=1000)
+            except Exception:
+                pass
+
+        self.active_users[user_id] = {"socket": websocket, "subscriptions": set()}
 
     def disconnect(self, user_id: uuid.UUID):
         if user_id in self.active_users:

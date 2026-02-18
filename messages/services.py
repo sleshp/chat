@@ -9,7 +9,9 @@ from messages.schemas import MessageCreateSchema
 
 class MessageService:
     @staticmethod
-    async def create_message(session: AsyncSession, data: MessageCreateSchema, sender_id):
+    async def create_message(
+        session: AsyncSession, data: MessageCreateSchema, sender_id
+    ):
         message = Messages(
             chat_id=data.chat_id,
             sender_id=sender_id,
@@ -21,11 +23,15 @@ class MessageService:
         return msg
 
     @staticmethod
-    async def get_chat_history(session: AsyncSession, chat_id, limit: int, offset: int) -> list[Messages]:
+    async def get_chat_history(
+        session: AsyncSession, chat_id, limit: int, offset: int
+    ) -> list[Messages]:
         return await MessageRepository.get_by_chat(session, chat_id, limit, offset)
 
     @staticmethod
-    async def mark_as_read(session: AsyncSession, message_ids: list[uuid.UUID], user_id: uuid.UUID) -> list[Messages]:
+    async def mark_as_read(
+        session: AsyncSession, message_ids: list[uuid.UUID], user_id: uuid.UUID
+    ) -> list[Messages]:
         messages = await MessageRepository.mark_as_read(session, message_ids, user_id)
         await session.commit()
         return messages

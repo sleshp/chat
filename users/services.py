@@ -1,8 +1,8 @@
 import uuid
-from datetime import timedelta, datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,14 +29,18 @@ class UserService:
         expire = datetime.now(timezone.utc) + timedelta(minutes=30)
         to_encode.update({"exp": expire})
         auth_data = get_auth_data()
-        encode_jwt = jwt.encode(to_encode, auth_data['secret_key'], algorithm=auth_data['algorithm'])
+        encode_jwt = jwt.encode(
+            to_encode, auth_data["secret_key"], algorithm=auth_data["algorithm"]
+        )
         return encode_jwt
 
     @staticmethod
     async def get_current_user_by_token(session: AsyncSession, token: str):
         try:
             auth_data = get_auth_data()
-            payload = jwt.decode(token, auth_data['secret_key'], algorithms=[auth_data['algorithm']])
+            payload = jwt.decode(
+                token, auth_data["secret_key"], algorithms=[auth_data["algorithm"]]
+            )
             user_id: str = payload.get("sub")
             if user_id is None:
                 raise HTTPException(status_code=401, detail="Invalid token")
